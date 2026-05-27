@@ -1,0 +1,30 @@
+name: Stamp SW version
+
+on:
+  push:
+    branches: [main]
+    # Don't re-trigger when this action pushes its own commit
+    paths-ignore:
+      - 'sw.js'
+
+jobs:
+  stamp-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Inject commit SHA into service worker
+        run: |
+          SHORT="${GITHUB_SHA:0:7}"
+          sed -i "s/__VERSION__/$SHORT/g" sw.js
+
+      - name: Commit updated service worker
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sw.js
+          git diff --staged --quiet && echo "No changes" || \
+            git commit -m "chore: stamp sw version ${GITHUB_SHA:0:7} [skip ci]" && \
+            git push

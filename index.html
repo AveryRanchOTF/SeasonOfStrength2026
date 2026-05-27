@@ -709,5 +709,31 @@
   </nav>
 
   <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        // When a new SW is found, wait for it to install then reload
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            // Only reload if an old SW was already controlling the page
+            // (i.e., this is an update, not the very first install)
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              showToast('Updating to latest version…');
+            }
+          });
+        });
+      });
+
+      // New SW called skipWaiting + clients.claim → reload to get fresh files
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!reloading) {
+          reloading = true;
+          location.reload();
+        }
+      });
+    }
+  </script>
 </body>
 </html>
