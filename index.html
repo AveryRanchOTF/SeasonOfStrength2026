@@ -440,7 +440,23 @@
             <div class="score-val" id="best-deadlift">—</div>
           </div>
         </div>
-        <button class="clear-btn" onclick="clearScores()">Clear All Scores</button>
+        <button class="clear-btn" onclick="clearScores()">Clear Best Scores</button>
+      </div>
+
+      <!-- Score History -->
+      <div class="card">
+        <div class="history-header">
+          <div>
+            <h2 class="card-title" style="margin-bottom:2px">Score History</h2>
+            <p class="card-sub" style="margin-bottom:0">Every score you've saved, newest first</p>
+          </div>
+          <button class="clear-btn inline" onclick="clearHistory()">Clear</button>
+        </div>
+        <div id="history-list">
+          <div class="history-empty" id="history-empty">
+            No scores saved yet. Calculate a score above and tap Save.
+          </div>
+        </div>
       </div>
 
       <!-- Understanding scores -->

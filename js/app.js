@@ -200,27 +200,48 @@ function selectArm(btn) {
 
 // ─── Save Scores ───────────────────────────────────────────
 const STORAGE_KEY = 'sos_best_scores_v2';
+const HISTORY_KEY = 'sos_score_history_v1';
+const MAX_HISTORY = 200;
 
 function loadSavedScores() {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   updateScoreDisplay(saved);
+  renderHistory();
 }
 
 function saveScore() {
   if (!lastCalcResult) return;
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
 
-  const key = getScoreKey(lastCalcResult.movement, lastCalcResult.arm);
-  const existing = saved[key] || 0;
+  const saved   = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const key     = getScoreKey(lastCalcResult.movement, lastCalcResult.arm);
+  const existing  = saved[key] || 0;
+  const isNewBest = lastCalcResult.score > existing;
 
-  if (lastCalcResult.score >= existing) {
+  // Update best scores
+  if (isNewBest) {
     saved[key] = lastCalcResult.score;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
     updateScoreDisplay(saved);
-    showToast(lastCalcResult.score > existing ? '🏆 New best score saved!' : '✓ Score saved');
-  } else {
-    showToast('Your best is still ' + existing.toLocaleString());
   }
+
+  // Always append to history
+  const entry = {
+    movement:      lastCalcResult.movement,
+    movementLabel: lastCalcResult.movementLabel,
+    score:         lastCalcResult.score,
+    totalWeight:   lastCalcResult.totalWeight,
+    reps:          lastCalcResult.repsInput,
+    arm:           lastCalcResult.arm || null,
+    isBest:        isNewBest,
+    date:          new Date().toISOString(),
+  };
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+  renderHistory();
+  showToast(isNewBest ? '🏆 New best score saved!' : '✓ Score saved');
 }
 
 function getScoreKey(movement, arm) {
@@ -230,13 +251,12 @@ function getScoreKey(movement, arm) {
 
 function updateScoreDisplay(saved) {
   const updates = {
-    'best-chest':   saved['chest']   || null,
-    'best-row-l':   saved['row-left']|| null,
-    'best-row-r':   saved['row-right']|| null,
-    'best-squat':   saved['squat']   || null,
-    'best-deadlift':saved['deadlift']|| null,
+    'best-chest':    saved['chest']     || null,
+    'best-row-l':    saved['row-left']  || null,
+    'best-row-r':    saved['row-right'] || null,
+    'best-squat':    saved['squat']     || null,
+    'best-deadlift': saved['deadlift']  || null,
   };
-
   for (const [id, val] of Object.entries(updates)) {
     const el = document.getElementById(id);
     if (!el) continue;
@@ -250,11 +270,59 @@ function updateScoreDisplay(saved) {
   }
 }
 
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const list    = document.getElementById('history-list');
+  const empty   = document.getElementById('history-empty');
+  if (!list) return;
+
+  Array.from(list.querySelectorAll('.history-entry')).forEach(el => el.remove());
+
+  if (history.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const icons = { chest: '🏋️', row: '💪', squat: '🦵', deadlift: '🏆' };
+
+  history.forEach(entry => {
+    const d       = new Date(entry.date);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const mathStr = entry.movement === 'chest'
+      ? `${entry.totalWeight / 2} lb × 2 × ${entry.reps} reps`
+      : `${entry.totalWeight} lb × ${entry.reps} reps`;
+
+    const el = document.createElement('div');
+    el.className = 'history-entry';
+    el.innerHTML = `
+      <div class="history-move-icon">${icons[entry.movement] || '💪'}</div>
+      <div class="history-details">
+        <div class="history-move">${entry.movementLabel}</div>
+        <div class="history-math">${mathStr}</div>
+      </div>
+      <div class="history-right">
+        <div class="history-score">${entry.score.toLocaleString()}</div>
+        <div class="history-date">${dateStr} · ${timeStr}</div>
+        ${entry.isBest ? '<span class="history-best-tag">Best</span>' : ''}
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
 function clearScores() {
-  if (!confirm('Clear all saved scores?')) return;
+  if (!confirm('Clear all best scores?')) return;
   localStorage.removeItem(STORAGE_KEY);
   loadSavedScores();
-  showToast('Scores cleared');
+  showToast('Best scores cleared');
+}
+
+function clearHistory() {
+  if (!confirm('Clear all score history?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  showToast('History cleared');
 }
 
 // ─── Toast ─────────────────────────────────────────────────
