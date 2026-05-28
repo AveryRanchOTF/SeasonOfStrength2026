@@ -23,6 +23,27 @@
     </div>
   </div>
 
+  <!-- Name Entry Screen (shown once on first launch) -->
+  <div class="name-screen" id="name-screen">
+    <div class="name-screen-inner">
+      <div class="name-screen-badge">OTF</div>
+      <h2 class="name-screen-title">Hey there! 👋</h2>
+      <p class="name-screen-sub">What should we call you?</p>
+      <input
+        type="text"
+        class="name-input"
+        id="name-input"
+        placeholder="Enter your name"
+        autocomplete="given-name"
+        maxlength="30"
+      >
+      <button class="name-submit-btn" id="name-submit-btn" onclick="submitName()">
+        Let's Go! →
+      </button>
+      <p class="name-screen-note">Your name is saved on this device only</p>
+    </div>
+  </div>
+
   <!-- Fixed Header -->
   <header class="app-header">
     <div class="header-inner">
@@ -45,8 +66,10 @@
 
       <div class="hero-card">
         <div class="hero-label">AVERY RANCH OTF · 2026</div>
+        <div class="hero-greeting" id="hero-greeting">Hey <span id="greeting-name"></span>! 💪</div>
         <h1 class="hero-title">SEASON OF<br>STRENGTH</h1>
         <p class="hero-tagline">Gain Muscle. Build Strength. See Real Progress.</p>
+        <button class="hero-name-btn" id="hero-name-btn" onclick="resetName()" title="Change name">✎</button>
       </div>
 
       <div class="stat-row">

@@ -1,11 +1,84 @@
 'use strict';
 
-// ─── Splash ──────────────────────────────────────────────
+// ─── Splash & Name Entry ──────────────────────────────────
+const NAME_KEY = 'sos_member_name';
+
 window.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
-  setTimeout(() => splash.classList.add('hidden'), 1800);
+
+  // After splash fades, decide: name entry or straight into the app
+  setTimeout(() => {
+    splash.classList.add('hidden');
+    const saved = localStorage.getItem(NAME_KEY);
+    if (saved) {
+      applyGreeting(saved);
+    } else {
+      showNameScreen();
+    }
+  }, 1800);
+
   loadSavedScores();
+
+  // Allow submitting the name with the Enter key
+  const nameInput = document.getElementById('name-input');
+  if (nameInput) {
+    nameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitName();
+    });
+  }
 });
+
+function showNameScreen() {
+  const screen = document.getElementById('name-screen');
+  screen.classList.add('visible');
+  // Delay focus so the keyboard doesn't pop up before the screen animates in
+  setTimeout(() => document.getElementById('name-input').focus(), 350);
+}
+
+function submitName() {
+  const input = document.getElementById('name-input');
+  const name  = input.value.trim();
+  if (!name) {
+    input.classList.add('shake');
+    setTimeout(() => input.classList.remove('shake'), 400);
+    return;
+  }
+  localStorage.setItem(NAME_KEY, name);
+
+  // Fade out name screen
+  const screen = document.getElementById('name-screen');
+  screen.classList.add('hiding');
+  setTimeout(() => {
+    screen.classList.remove('visible', 'hiding');
+  }, 400);
+
+  applyGreeting(name);
+}
+
+function applyGreeting(name) {
+  const greetingEl  = document.getElementById('hero-greeting');
+  const nameEl      = document.getElementById('greeting-name');
+  const nameBtn     = document.getElementById('hero-name-btn');
+
+  if (greetingEl && nameEl) {
+    nameEl.textContent = name;
+    greetingEl.style.display = 'block';
+  }
+  if (nameBtn) nameBtn.classList.add('visible');
+}
+
+function resetName() {
+  if (!confirm('Change your name?')) return;
+  localStorage.removeItem(NAME_KEY);
+
+  // Hide greeting
+  const greetingEl = document.getElementById('hero-greeting');
+  const nameBtn    = document.getElementById('hero-name-btn');
+  if (greetingEl) greetingEl.style.display = 'none';
+  if (nameBtn)    nameBtn.classList.remove('visible');
+
+  showNameScreen();
+}
 
 // ─── Tab Navigation ──────────────────────────────────────
 let currentTab = 'home';
