@@ -1100,16 +1100,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: inline-block;
+  line-height: 1.6;
+  vertical-align: middle;
 }
 .history-best-tag {
   color: var(--orange);
   background: var(--orange-dim);
-  border: 1px solid rgba(244,123,32,0.3);
+  border: 1px solid rgba(244,123,32,0.5);
 }
 .history-last-tag {
-  color: #aaa;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.15);
+  color: #ccc;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.35);
 }
 
 /* ─── Save confirmation toast ────────────────────────── */
