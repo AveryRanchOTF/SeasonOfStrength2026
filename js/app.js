@@ -284,9 +284,29 @@ function renderHistory() {
   }
   if (empty) empty.style.display = 'none';
 
+  // Compute the true all-time best score per movement key across the full history.
+  // This is recalculated fresh each render so the tag is always accurate.
+  const allTimeBest = {};
+  history.forEach(entry => {
+    const key = entry.movement === 'row'
+      ? `row-${entry.arm || 'left'}`
+      : entry.movement;
+    if (entry.score > (allTimeBest[key] || 0)) allTimeBest[key] = entry.score;
+  });
+
+  // Track which movement keys have already had the Best tag assigned.
+  // History is newest-first, so the first match per key = most recent best.
+  const bestTagged = new Set();
+
   const icons = { chest: '🏋️', row: '💪', squat: '🦵', deadlift: '🏆' };
 
   history.forEach(entry => {
+    const key    = entry.movement === 'row'
+      ? `row-${entry.arm || 'left'}`
+      : entry.movement;
+    const isBest = entry.score === allTimeBest[key] && !bestTagged.has(key);
+    if (isBest) bestTagged.add(key);
+
     const d       = new Date(entry.date);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -305,7 +325,7 @@ function renderHistory() {
       <div class="history-right">
         <div class="history-score">${entry.score.toLocaleString()}</div>
         <div class="history-date">${dateStr} · ${timeStr}</div>
-        ${entry.isBest ? '<span class="history-best-tag">Best</span>' : ''}
+        ${isBest ? '<span class="history-best-tag">Best</span>' : ''}
       </div>`;
     list.appendChild(el);
   });
