@@ -294,9 +294,10 @@ function renderHistory() {
     if (entry.score > (allTimeBest[key] || 0)) allTimeBest[key] = entry.score;
   });
 
-  // Track which movement keys have already had the Best tag assigned.
-  // History is newest-first, so the first match per key = most recent best.
+  // History is newest-first, so the first occurrence of each key = most recent entry.
+  // Track which keys have had their Best and Last tags assigned.
   const bestTagged = new Set();
+  const lastTagged = new Set();
 
   const icons = { chest: '🏋️', row: '💪', squat: '🦵', deadlift: '🏆' };
 
@@ -305,7 +306,9 @@ function renderHistory() {
       ? `row-${entry.arm || 'left'}`
       : entry.movement;
     const isBest = entry.score === allTimeBest[key] && !bestTagged.has(key);
+    const isLast = !lastTagged.has(key);   // first seen = most recent
     if (isBest) bestTagged.add(key);
+    if (isLast) lastTagged.add(key);
 
     const d       = new Date(entry.date);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -313,6 +316,11 @@ function renderHistory() {
     const mathStr = entry.movement === 'chest'
       ? `${entry.totalWeight / 2} lb × 2 × ${entry.reps} reps`
       : `${entry.totalWeight} lb × ${entry.reps} reps`;
+
+    const tags = [
+      isLast ? '<span class="history-last-tag">Last</span>' : '',
+      isBest ? '<span class="history-best-tag">Best</span>' : '',
+    ].join('');
 
     const el = document.createElement('div');
     el.className = 'history-entry';
@@ -325,7 +333,7 @@ function renderHistory() {
       <div class="history-right">
         <div class="history-score">${entry.score.toLocaleString()}</div>
         <div class="history-date">${dateStr} · ${timeStr}</div>
-        ${isBest ? '<span class="history-best-tag">Best</span>' : ''}
+        ${tags ? `<div class="history-tags">${tags}</div>` : ''}
       </div>`;
     list.appendChild(el);
   });

@@ -1084,18 +1084,32 @@ body {
   color: var(--text-dim);
   margin-top: 2px;
 }
-.history-best-tag {
+.history-tags {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.history-best-tag,
+.history-last-tag {
   font-size: 9px;
   font-weight: 700;
-  color: var(--orange);
-  background: var(--orange-dim);
-  border: 1px solid rgba(244,123,32,0.3);
   border-radius: 4px;
   padding: 1px 5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: inline-block;
-  margin-top: 3px;
+}
+.history-best-tag {
+  color: var(--orange);
+  background: var(--orange-dim);
+  border: 1px solid rgba(244,123,32,0.3);
+}
+.history-last-tag {
+  color: #aaa;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
 }
 
 /* ─── Save confirmation toast ────────────────────────── */
